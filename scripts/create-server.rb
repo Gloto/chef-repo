@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require "open3"
+require_relative "./script_utils"
 
 IDENTITY_FILE="aws-gloto"
 AMI_ID="ami-d0f89fb9"
@@ -8,22 +8,6 @@ SSH_USER="ubuntu"
 
 unless ENV["AWS_SSH_KEY"] && File.exist?(ENV["AWS_SSH_KEY"])
   raise "Please set the environment variable AWS_SSH_KEY to point to the amazon key"
-end
-
-def run_command(command, verbose = false)
-  exit_status = nil
-  output = []
-  puts command if verbose
-  Open3.popen3(command) do |stdin, stdout, stderr, wait_thread|
-    stdout.each do |line|
-      output << line.strip
-      $stdout.puts(line) if verbose
-    end
-    stderr.each { |line| $stderr.puts line }
-    exit_status = wait_thread.value.to_i
-  end
-  raise %Q(The command "#{command}" failed.) unless exit_status.eql? 0
-  output
 end
 
 def present_menu(title, values, choices, default = nil)
@@ -46,27 +30,7 @@ security_groups = run_command("ec2-describe-group | grep vpc").map do |line|
   {id: id, name: name, description: description}
 end
 
-subnets = run_command("ec2-describe-subnets").reduce({}) do |memo, line|
-  line = line.split("\t")
-  case line[0]
-  when "SUBNET"
-    _, id, available, vpc, cidr, zone = line
-    if available.eql?("available")
-      memo[id] = { id: id, cidr: cidr }
-    end
-  when "TAG"
-    _, _, id, key, value = line
-    if key.eql?("Name") && memo[id]
-      memo[id][:name] = value
-    end
-  end
-
-  memo
-end.values.sort do |subnet1, subnet2|
-  octet1 = subnet1[:cidr].split(".")[2].to_i
-  octet2 = subnet2[:cidr].split(".")[2].to_i
-  octet1 <=> octet2
-end
+subnets = load_subnets
 
 flavors = ["t1.micro", "m1.small", "m1.medium", "m1.large"]
 
