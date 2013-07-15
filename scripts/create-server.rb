@@ -6,6 +6,10 @@ IDENTITY_FILE="aws-gloto"
 AMI_ID="ami-d0f89fb9"
 SSH_USER="ubuntu"
 
+unless ENV["AWS_SSH_KEY"] && File.exist?(ENV["AWS_SSH_KEY"])
+  raise "Please set the environment variable AWS_SSH_KEY to point to the amazon key"
+end
+
 def run_command(command, verbose = false)
   exit_status = nil
   output = []
@@ -96,7 +100,8 @@ knife ec2 server create \
   --security-group-ids #{group[:id]} \
   --subnet #{subnet[:id]} \
   --ssh-user #{SSH_USER} \
-  --node-name #{name}
+  --node-name #{name} \
+  --identity-file #{ENV["AWS_SSH_KEY"]}
   EOS
   run_command(command.strip, true)
 else
