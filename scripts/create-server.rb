@@ -2,13 +2,13 @@
 
 require_relative "./script_utils"
 
-IDENTITY_FILE="aws-gloto"
-AMI_ID="ami-d0f89fb9"
-SSH_USER="ubuntu"
-
-unless ENV["AWS_SSH_KEY"] && File.exist?(ENV["AWS_SSH_KEY"])
-  raise "Please set the environment variable AWS_SSH_KEY to point to the amazon key"
+unless ENV["AWS_SSH_KEY"] && File.exists?(ENV["AWS_SSH_KEY"])
+  raise "Please set the path to the Amazon key in the env variable AWS_SSH_KEY"
 end
+
+SSH_KEY_PATH=ENV["AWS_SSH_KEY"]
+SSH_USER="ubuntu"
+AMI_ID="ami-d0f89fb9"
 
 def present_menu(title, values, choices, default = nil)
   puts ""
@@ -41,6 +41,13 @@ group =  present_menu("Security group", security_groups, security_groups.map { |
 subnet = present_menu("Subnet", subnets, subnets.map { |subnet| "%-15s %s" % [subnet[:name], subnet[:cidr]] })
 flavor = present_menu("Machine type", flavors, flavors, 2)
 
+roles = run_command("knife role list").map{ |line| " - #{line}" }
+puts ""
+puts "Currently defined chef roles:\n#{roles.join("\n")}"
+puts ""
+print "Enter chef run list: "
+run_list = gets.strip
+
 puts <<-EOS
 
 Creating new EC2 machine:
@@ -49,6 +56,8 @@ Creating new EC2 machine:
   Flavor:         #{flavor}
   Security group: #{group[:name]}
   Subnet:         #{subnet[:id]} (#{subnet[:name]})
+  Run list:
+#{run_list.split(",").map{|r| "    - #{r}"}.join("\n")}
 
 EOS
 
@@ -59,12 +68,13 @@ if confirm.downcase.eql?("y")
   command = <<-EOS
 knife ec2 server create \
   --flavor #{flavor} \
-  --identity-file #{IDENTITY_FILE} \
+  --identity-file #{SSH_KEY_PATH} \
   --image #{AMI_ID} \
   --security-group-ids #{group[:id]} \
   --subnet #{subnet[:id]} \
   --ssh-user #{SSH_USER} \
-  --node-name #{name} \
+  --node-name "#{name}" \
+  --run-list "#{run_list}" \
   --identity-file #{ENV["AWS_SSH_KEY"]}
   EOS
   run_command(command.strip, true)
