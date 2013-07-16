@@ -12,6 +12,11 @@
     "hostname": {
       "locked_version": "0.0.6"
     },
+    "gloto-chef-cookbook": {
+      "locked_version": "0.1.0",
+      "git": "https://github.com/Gloto/gloto-chef-cookbook.git",
+      "ref": "4b52908f1b54c667fec32c8b525b7f37199d1db9"
+    },
     "dmg": {
       "locked_version": "1.1.0"
     },

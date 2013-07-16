@@ -7,6 +7,6 @@ override_attributes(
   }
 )
 run_list(
-  "recipe[gloto-cloud::apt-update]",
+  "recipe[gloto-chef-cookbook::apt-update]",
   "role[base]"
 )
