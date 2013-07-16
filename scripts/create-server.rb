@@ -68,14 +68,13 @@ if confirm.downcase.eql?("y")
   command = <<-EOS
 knife ec2 server create \
   --flavor #{flavor} \
-  --identity-file #{SSH_KEY_PATH} \
   --image #{AMI_ID} \
   --security-group-ids #{group[:id]} \
   --subnet #{subnet[:id]} \
   --ssh-user #{SSH_USER} \
+  --identity-file #{SSH_KEY_PATH} \
   --node-name "#{name}" \
-  --run-list "#{run_list}" \
-  --identity-file #{ENV["AWS_SSH_KEY"]}
+  --run-list "#{run_list}"
   EOS
   run_command(command.strip, true)
 else
