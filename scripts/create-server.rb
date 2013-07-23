@@ -66,15 +66,16 @@ confirm = gets.strip
 
 if confirm.downcase.eql?("y")
   command = <<-EOS
-knife ec2 server create \
+bundle exec knife ec2 server create \
   --flavor #{flavor} \
   --image #{AMI_ID} \
   --security-group-ids #{group[:id]} \
   --subnet #{subnet[:id]} \
   --ssh-user #{SSH_USER} \
   --identity-file #{SSH_KEY_PATH} \
-  --node-name "#{name}" \
-  --run-list "#{run_list}"
+  --node-name "#{name.gsub(/ /, "_")}" \
+  --run-list "#{run_list}" \
+  --tags "Name=#{name}"
   EOS
   run_command(command.strip, true)
 else
