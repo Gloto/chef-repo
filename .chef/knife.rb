@@ -22,6 +22,8 @@ log_location             STDOUT
 node_name                (ENV["CHEF_USER"] || ENV["USER"] || ENV["USERNAME"]).downcase
 client_key               (ENV["CHEF_CLIENT_KEY"] || "#{chef_dir}/#{node_name}.pem")
 
+encrypted_data_bag_secret (ENV["CHEF_DATA_BAG_SECRET"] || "#{chef_dir}/encrypted_data_bag_secret")
+
 validation_client_name   "chef-validator"
 validation_key           "#{chef_dir}/chef-validator.pem"
 
