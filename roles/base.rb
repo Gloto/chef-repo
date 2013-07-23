@@ -8,6 +8,12 @@ default_attributes(
       "2.pool.ntp.org",
       "3.pool.ntp.org"
     ]
+  },
+  "openssh" => {
+    "server" => {
+      "rsa_authentication" => "yes",
+      "pubkey_authentication" => "yes"
+    }
   }
 )
 override_attributes(
@@ -19,5 +25,6 @@ run_list(
   "recipe[chef-client::delete_validation]",
   "recipe[chef-client::service]",
   "recipe[build-essential]",
-  "recipe[ntp]"
+  "recipe[ntp]",
+  "recipe[openssh]"
 )
